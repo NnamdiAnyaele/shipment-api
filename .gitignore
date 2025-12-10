@@ -129,10 +129,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-config/
 config.zip
 settings.json
-bin/www
 package-lock.json
 yarn.lock
 .pnpm-lock.yaml
