@@ -1,0 +1,274 @@
+/* ShipTrack - Main Stylesheet */
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Timeline styles */
+.timeline {
+  position: relative;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 40px;
+  padding-bottom: 20px;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 24px;
+  height: calc(100% - 24px);
+  width: 2px;
+  background: #e9ecef;
+}
+
+.timeline-item:last-child::before {
+  display: none;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px #e9ecef;
+}
+
+.timeline-item.active .timeline-marker {
+  box-shadow: 0 0 0 3px currentColor;
+}
+
+.timeline-content {
+  padding: 0;
+}
+
+/* Card hover effects */
+.card {
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Table styles */
+.table th {
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: #6c757d;
+}
+
+/* Badge styles */
+.badge {
+  font-weight: 500;
+  padding: 0.4em 0.65em;
+}
+
+/* Button loading state */
+.btn .spinner-border {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}
+
+/* Form styles */
+.form-control:focus,
+.form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+.form-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+/* Feature icon */
+.feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Avatar styles */
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 0.875rem;
+}
+
+.avatar-lg {
+  width: 80px;
+  height: 80px;
+  font-size: 2rem;
+}
+
+/* Toast styles */
+.toast {
+  min-width: 300px;
+}
+
+/* Navbar */
+.navbar-brand {
+  font-weight: 600;
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid #e9ecef;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .btn-group-sm > .btn {
+    padding: 0.25rem 0.4rem;
+  }
+  
+  .table td,
+  .table th {
+    padding: 0.5rem;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Stats card */
+.stat-card .stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* Alert styles */
+.alert {
+  border: none;
+  border-radius: 0.5rem;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border: none;
+}
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  background: none;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.breadcrumb-item a {
+  text-decoration: none;
+}
+
+/* Pagination */
+.pagination {
+  margin-bottom: 0;
+}
+
+.page-link {
+  border: none;
+  color: #6c757d;
+}
+
+.page-link:hover {
+  background-color: #e9ecef;
+  color: #0d6efd;
+}
+
+.page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+/* Input group */
+.input-group-text {
+  background-color: #fff;
+  border-right: none;
+}
+
+.input-group > .form-control:not(:first-child) {
+  border-left: none;
+}
+
+.input-group > .form-control:focus {
+  border-color: #ced4da;
+}
+
+.input-group:focus-within .input-group-text {
+  border-color: #86b7fe;
+}
+
+.input-group:focus-within .form-control {
+  border-color: #86b7fe;
+}
+
+/* Status colors */
+.status-pending { color: #ffc107; }
+.status-in_transit { color: #0dcaf0; }
+.status-delivered { color: #198754; }
+.status-cancelled { color: #dc3545; }
+
+/* Quick action buttons */
+.quick-actions .btn {
+  margin-bottom: 0.5rem;
+}

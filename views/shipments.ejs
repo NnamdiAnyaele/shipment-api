@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | ShipTrack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="/stylesheets/style.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+  <%- include('partials/header') %>
+
+  <main class="flex-grow-1 py-4">
+    <div class="container">
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 mb-1">My Shipments</h1>
+          <p class="text-muted mb-0">Manage and track all your shipments</p>
+        </div>
+        <a href="/shipments/new" class="btn btn-primary">
+          <i class="bi bi-plus-lg me-2"></i>New Shipment
+        </a>
+      </div>
+
+      <!-- Filters -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <form id="filterForm" class="row g-3">
+            <div class="col-md-4">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="searchInput" placeholder="Search shipments...">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="in_transit">In Transit</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" id="sortSelect">
+                <option value="createdAt-desc">Newest First</option>
+                <option value="createdAt-asc">Oldest First</option>
+                <option value="trackingNumber-asc">Tracking # (A-Z)</option>
+                <option value="trackingNumber-desc">Tracking # (Z-A)</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-outline-secondary w-100" id="resetFilters">
+                <i class="bi bi-x-lg me-1"></i>Reset
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Shipments Table -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Tracking Number</th>
+                  <th>Sender</th>
+                  <th>Receiver</th>
+                  <th>Origin</th>
+                  <th>Destination</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="shipmentsTableBody">
+                <tr>
+                  <td colspan="8" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 mb-0 text-muted">Loading shipments...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <nav class="mt-4" id="paginationNav">
+        <ul class="pagination justify-content-center" id="pagination"></ul>
+      </nav>
+    </div>
+  </main>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm Delete</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this shipment?</p>
+          <p class="mb-0"><strong>Tracking Number:</strong> <span id="deleteTrackingNumber"></span></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+  <%- include('partials/scripts') %>
+
+  <script>
+    let currentPage = 1;
+    let deleteShipmentId = null;
+    const itemsPerPage = 10;
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      if (!Auth.requireAuth()) return;
+
+      await loadShipments();
+
+      // Search with debounce
+      let searchTimeout;
+      document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          currentPage = 1;
+          loadShipments();
+        }, 300);
+      });
+
+      // Filter changes
+      document.getElementById('statusFilter').addEventListener('change', function() {
+        currentPage = 1;
+        loadShipments();
+      });
+
+      document.getElementById('sortSelect').addEventListener('change', function() {
+        currentPage = 1;
+        loadShipments();
+      });
+
+      // Reset filters
+      document.getElementById('resetFilters').addEventListener('click', function() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('sortSelect').value = 'createdAt-desc';
+        currentPage = 1;
+        loadShipments();
+      });
+
+      // Delete confirmation
+      document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+        if (!deleteShipmentId) return;
+        
+        try {
+          this.disabled = true;
+          const response = await Api.delete(`/shipments/${deleteShipmentId}`);
+          
+          if (response.success) {
+            App.showToast('Shipment deleted successfully', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+            loadShipments();
+          } else {
+            App.showToast(response.message || 'Failed to delete shipment', 'error');
+          }
+        } catch (error) {
+          App.showToast(error.message || 'An error occurred', 'error');
+        } finally {
+          this.disabled = false;
+        }
+      });
+    });
+
+    async function loadShipments() {
+      const tableBody = document.getElementById('shipmentsTableBody');
+      const search = document.getElementById('searchInput').value;
+      const status = document.getElementById('statusFilter').value;
+      const [sortBy, sortOrder] = document.getElementById('sortSelect').value.split('-');
+
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 mb-0 text-muted">Loading shipments...</p>
+          </td>
+        </tr>
+      `;
+
+      try {
+        const params = {
+          page: currentPage,
+          limit: itemsPerPage,
+          sortBy,
+          sortOrder
+        };
+        if (search) params.search = search;
+        if (status) params.status = status;
+
+        const response = await Api.get('/shipments', params);
+
+        if (response.success) {
+          if (response.data.length > 0) {
+            tableBody.innerHTML = response.data.map(shipment => `
+              <tr>
+                <td>
+                  <a href="/shipments/view/${shipment._id}" class="fw-medium text-decoration-none">
+                    ${shipment.trackingNumber}
+                  </a>
+                </td>
+                <td>${App.escapeHtml(shipment.senderName)}</td>
+                <td>${App.escapeHtml(shipment.receiverName)}</td>
+                <td><small>${App.escapeHtml(shipment.origin)}</small></td>
+                <td><small>${App.escapeHtml(shipment.destination)}</small></td>
+                <td>${App.getStatusBadge(shipment.status)}</td>
+                <td><small class="text-muted">${App.formatDate(shipment.createdAt)}</small></td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <a href="/shipments/view/${shipment._id}" class="btn btn-outline-secondary" title="View Details">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="/shipments/edit/${shipment._id}" class="btn btn-outline-secondary" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    ${shipment.status === 'pending' || shipment.status === 'cancelled' ? `
+                      <button type="button" class="btn btn-outline-danger" title="Delete" 
+                        onclick="showDeleteModal('${shipment._id}', '${shipment.trackingNumber}')">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    ` : ''}
+                  </div>
+                </td>
+              </tr>
+            `).join('');
+
+            renderPagination(response.pagination);
+          } else {
+            tableBody.innerHTML = `
+              <tr>
+                <td colspan="8" class="text-center py-5">
+                  <i class="bi bi-inbox display-4 text-muted"></i>
+                  <p class="mt-3 mb-2">No shipments found</p>
+                  <a href="/shipments/new" class="btn btn-primary btn-sm">Create New Shipment</a>
+                </td>
+              </tr>
+            `;
+            document.getElementById('pagination').innerHTML = '';
+          }
+        }
+      } catch (error) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-5 text-danger">
+              <i class="bi bi-exclamation-triangle display-4"></i>
+              <p class="mt-3 mb-0">Failed to load shipments</p>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderPagination(pagination) {
+      const paginationEl = document.getElementById('pagination');
+      const { currentPage: page, totalPages, totalItems } = pagination;
+
+      if (totalPages <= 1) {
+        paginationEl.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+
+      // Previous button
+      html += `
+        <li class="page-item ${page === 1 ? 'disabled' : ''}">
+          <a class="page-link" href="#" onclick="goToPage(${page - 1}); return false;">Previous</a>
+        </li>
+      `;
+
+      // Page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+          html += `
+            <li class="page-item ${i === page ? 'active' : ''}">
+              <a class="page-link" href="#" onclick="goToPage(${i}); return false;">${i}</a>
+            </li>
+          `;
+        } else if (i === page - 3 || i === page + 3) {
+          html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+      }
+
+      // Next button
+      html += `
+        <li class="page-item ${page === totalPages ? 'disabled' : ''}">
+          <a class="page-link" href="#" onclick="goToPage(${page + 1}); return false;">Next</a>
+        </li>
+      `;
+
+      paginationEl.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      loadShipments();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showDeleteModal(id, trackingNumber) {
+      deleteShipmentId = id;
+      document.getElementById('deleteTrackingNumber').textContent = trackingNumber;
+      new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+  </script>
+</body>
+</html>

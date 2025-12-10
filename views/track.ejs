@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | ShipTrack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="/stylesheets/style.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+  <%- include('partials/header') %>
+
+  <main class="flex-grow-1 py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <!-- Search Form -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+              <h2 class="h4 mb-4 text-center">
+                <i class="bi bi-search text-primary me-2"></i>Track Your Shipment
+              </h2>
+              <form id="trackForm">
+                <div class="input-group input-group-lg">
+                  <span class="input-group-text bg-white"><i class="bi bi-box-seam"></i></span>
+                  <input type="text" class="form-control" id="trackingInput" placeholder="Enter tracking number" required>
+                  <button type="submit" class="btn btn-primary px-4" id="trackBtn">
+                    <span class="spinner-border spinner-border-sm d-none me-2" id="trackSpinner"></span>
+                    Track
+                  </button>
+                </div>
+                <small class="text-muted">Example: SHP-M5X3K9Y-ABC123</small>
+              </form>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <div class="alert alert-danger d-none" id="errorMessage">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span id="errorText"></span>
+          </div>
+
+          <!-- Results -->
+          <div id="resultsContainer" class="d-none">
+            <!-- Shipment Card -->
+            <div class="card border-0 shadow-sm mb-4" id="shipmentCard">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                  <div>
+                    <h4 class="mb-1" id="resultTrackingNumber">-</h4>
+                    <p class="text-muted mb-0">Tracking Number</p>
+                  </div>
+                  <span id="resultStatus"></span>
+                </div>
+
+                <!-- Route -->
+                <div class="row mb-4">
+                  <div class="col-sm-5">
+                    <div class="d-flex align-items-start">
+                      <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                        <i class="bi bi-geo-alt text-primary"></i>
+                      </div>
+                      <div>
+                        <small class="text-muted">From</small>
+                        <p class="mb-0 fw-medium" id="resultOrigin">-</p>
+                        <small class="text-muted" id="resultSender">-</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-2 d-flex align-items-center justify-content-center">
+                    <i class="bi bi-arrow-right text-muted d-none d-sm-block"></i>
+                    <i class="bi bi-arrow-down text-muted d-block d-sm-none my-2"></i>
+                  </div>
+                  <div class="col-sm-5">
+                    <div class="d-flex align-items-start">
+                      <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                        <i class="bi bi-geo-alt-fill text-success"></i>
+                      </div>
+                      <div>
+                        <small class="text-muted">To</small>
+                        <p class="mb-0 fw-medium" id="resultDestination">-</p>
+                        <small class="text-muted" id="resultReceiver">-</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dates -->
+                <div class="row g-3">
+                  <div class="col-sm-4">
+                    <div class="bg-light rounded p-3 text-center">
+                      <small class="text-muted d-block">Shipped</small>
+                      <span class="fw-medium" id="resultShipped">-</span>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="bg-light rounded p-3 text-center">
+                      <small class="text-muted d-block">Est. Delivery</small>
+                      <span class="fw-medium" id="resultEstDelivery">-</span>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="bg-light rounded p-3 text-center">
+                      <small class="text-muted d-block">Delivered</small>
+                      <span class="fw-medium" id="resultDelivered">-</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Timeline -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white py-3">
+                <h5 class="mb-0">
+                  <i class="bi bi-clock-history text-primary me-2"></i>Tracking History
+                </h5>
+              </div>
+              <div class="card-body" id="historyContainer">
+                <!-- Timeline rendered here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+  <%- include('partials/scripts') %>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const trackForm = document.getElementById('trackForm');
+      const trackingInput = document.getElementById('trackingInput');
+      const trackBtn = document.getElementById('trackBtn');
+      const trackSpinner = document.getElementById('trackSpinner');
+      const resultsContainer = document.getElementById('resultsContainer');
+      const errorMessage = document.getElementById('errorMessage');
+
+      // Check for tracking number in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const trackingNumber = urlParams.get('number');
+      
+      if (trackingNumber) {
+        trackingInput.value = trackingNumber;
+        trackShipment(trackingNumber);
+      }
+
+      // Form submission
+      trackForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const number = trackingInput.value.trim();
+        if (number) {
+          // Update URL without reloading
+          const newUrl = window.location.pathname + '?number=' + encodeURIComponent(number);
+          window.history.pushState({ number }, '', newUrl);
+          trackShipment(number);
+        }
+      });
+
+      async function trackShipment(trackingNumber) {
+        // Reset UI
+        resultsContainer.classList.add('d-none');
+        errorMessage.classList.add('d-none');
+        trackBtn.disabled = true;
+        trackSpinner.classList.remove('d-none');
+
+        try {
+          // Public tracking endpoint - no auth required
+          const response = await fetch(`/api/track/${encodeURIComponent(trackingNumber)}`);
+          const data = await response.json();
+
+          if (data.success) {
+            renderResults(data.data);
+            resultsContainer.classList.remove('d-none');
+          } else {
+            showError(data.message || 'Shipment not found');
+          }
+        } catch (error) {
+          showError('Unable to track shipment. Please try again.');
+        } finally {
+          trackBtn.disabled = false;
+          trackSpinner.classList.add('d-none');
+        }
+      }
+
+      function renderResults(shipment) {
+        document.getElementById('resultTrackingNumber').textContent = shipment.trackingNumber;
+        document.getElementById('resultStatus').innerHTML = getStatusBadge(shipment.status);
+        document.getElementById('resultOrigin').textContent = shipment.origin;
+        document.getElementById('resultDestination').textContent = shipment.destination;
+        document.getElementById('resultSender').textContent = shipment.senderName;
+        document.getElementById('resultReceiver').textContent = shipment.receiverName;
+        document.getElementById('resultShipped').textContent = formatDate(shipment.createdAt);
+        document.getElementById('resultEstDelivery').textContent = shipment.estimatedDelivery ? formatDate(shipment.estimatedDelivery) : '-';
+        document.getElementById('resultDelivered').textContent = shipment.actualDelivery ? formatDate(shipment.actualDelivery) : '-';
+
+        // Render timeline
+        renderTimeline(shipment.statusHistory || []);
+      }
+
+      function renderTimeline(history) {
+        const container = document.getElementById('historyContainer');
+        
+        if (!history || history.length === 0) {
+          container.innerHTML = '<p class="text-muted mb-0">No tracking history available</p>';
+          return;
+        }
+
+        // Sort by date descending (newest first)
+        const sortedHistory = [...history].sort((a, b) => new Date(b.changedAt) - new Date(a.changedAt));
+
+        container.innerHTML = `
+          <div class="timeline">
+            ${sortedHistory.map((item, index) => `
+              <div class="timeline-item ${index === 0 ? 'active' : ''}">
+                <div class="timeline-marker bg-${getStatusColor(item.status)}"></div>
+                <div class="timeline-content">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      ${getStatusBadge(item.status)}
+                      <p class="mb-0 mt-1 small">${getStatusMessage(item.status)}</p>
+                      ${item.notes ? `<p class="mb-0 text-muted small fst-italic">"${escapeHtml(item.notes)}"</p>` : ''}
+                    </div>
+                    <small class="text-muted">${formatDateTime(item.changedAt)}</small>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      function showError(message) {
+        document.getElementById('errorText').textContent = message;
+        errorMessage.classList.remove('d-none');
+      }
+
+      function getStatusBadge(status) {
+        const badges = {
+          pending: '<span class="badge bg-warning text-dark">Pending</span>',
+          in_transit: '<span class="badge bg-info">In Transit</span>',
+          delivered: '<span class="badge bg-success">Delivered</span>',
+          cancelled: '<span class="badge bg-danger">Cancelled</span>'
+        };
+        return badges[status] || '<span class="badge bg-secondary">Unknown</span>';
+      }
+
+      function getStatusColor(status) {
+        const colors = {
+          pending: 'warning',
+          in_transit: 'info',
+          delivered: 'success',
+          cancelled: 'danger'
+        };
+        return colors[status] || 'secondary';
+      }
+
+      function getStatusMessage(status) {
+        const messages = {
+          pending: 'Shipment created and awaiting pickup',
+          in_transit: 'Package is on its way to destination',
+          delivered: 'Package has been delivered successfully',
+          cancelled: 'Shipment has been cancelled'
+        };
+        return messages[status] || 'Status updated';
+      }
+
+      function formatDate(dateString) {
+        if (!dateString) return '-';
+        return new Date(dateString).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      }
+
+      function formatDateTime(dateString) {
+        if (!dateString) return '-';
+        return new Date(dateString).toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    });
+  </script>
+</body>
+</html>
