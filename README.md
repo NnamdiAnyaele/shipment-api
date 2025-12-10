@@ -119,9 +119,10 @@ shipment-api/
    ```
 
 6. **Access the application**
-   - API: http://localhost:3005/api
-   - Documentation: http://localhost:3005/api-docs
-   - Web UI: http://localhost:3005
+   - API: https://documenter.getpostman.com/view/15551738/2sB3dSP8Kc/api
+   - Swagger Documentation: https://documenter.getpostman.com/view/15551738/2sB3dSP8Kc/api-docs
+   - Swagger Documentation: https://documenter.getpostman.com/view/15551738/2sB3dSP8Kc
+   - Web UI: https://documenter.getpostman.com/view/15551738/2sB3dSP8Kc
 
 ## 📖 API Documentation
 
