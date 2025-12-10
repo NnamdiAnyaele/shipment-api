@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | ShipTrack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="/stylesheets/style.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+  <%- include('partials/header') %>
+
+  <main class="flex-grow-1 py-4">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <h1 class="h3 mb-4">My Profile</h1>
+
+          <div class="row g-4">
+            <!-- Profile Card -->
+            <div class="col-md-4">
+              <div class="card border-0 shadow-sm text-center">
+                <div class="card-body p-4">
+                  <div class="avatar-upload mx-auto mb-3" style="width: 100px; height: 100px;">
+                    <div class="avatar-preview rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" id="avatarPreview" style="width: 100px; height: 100px;">
+                      <i class="bi bi-person text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                  </div>
+                  <h5 class="mb-1" id="profileName">-</h5>
+                  <p class="text-muted mb-2" id="profileEmail">-</p>
+                  <span class="badge bg-primary" id="profileRole">-</span>
+                  <hr>
+                  <small class="text-muted">
+                    Member since <span id="profileJoined">-</span>
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit Forms -->
+            <div class="col-md-8">
+              <!-- Update Profile -->
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0">
+                    <i class="bi bi-person-gear text-primary me-2"></i>Update Profile
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <form id="profileForm">
+                    <div class="mb-3">
+                      <label for="name" class="form-label">Full Name</label>
+                      <input type="text" class="form-control" id="name" name="name" required minlength="2" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                      <label for="email" class="form-label">Email Address</label>
+                      <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="updateProfileBtn">
+                      <span class="spinner-border spinner-border-sm d-none me-2" id="profileSpinner"></span>
+                      Save Changes
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Change Password -->
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0">
+                    <i class="bi bi-lock text-primary me-2"></i>Change Password
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <form id="passwordForm">
+                    <div class="mb-3">
+                      <label for="currentPassword" class="form-label">Current Password</label>
+                      <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                      <label for="newPassword" class="form-label">New Password</label>
+                      <input type="password" class="form-control" id="newPassword" name="newPassword" required minlength="6">
+                      <small class="text-muted">At least 6 characters</small>
+                    </div>
+                    <div class="mb-3">
+                      <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                      <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="changePasswordBtn">
+                      <span class="spinner-border spinner-border-sm d-none me-2" id="passwordSpinner"></span>
+                      Change Password
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Upload Avatar -->
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                  <h5 class="mb-0">
+                    <i class="bi bi-image text-primary me-2"></i>Profile Picture
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <form id="avatarForm">
+                    <div class="mb-3">
+                      <label for="avatar" class="form-label">Select Image</label>
+                      <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*" required>
+                      <small class="text-muted">Max 1MB. Supported: JPG, PNG, GIF</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="uploadAvatarBtn">
+                      <span class="spinner-border spinner-border-sm d-none me-2" id="avatarSpinner"></span>
+                      Upload
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+  <%- include('partials/scripts') %>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      if (!Auth.requireAuth()) return;
+
+      await loadProfile();
+
+      // Profile update form
+      document.getElementById('profileForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('updateProfileBtn');
+        const spinner = document.getElementById('profileSpinner');
+        
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+
+        try {
+          const response = await Api.put('/auth/profile', {
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim()
+          });
+
+          if (response.success) {
+            App.showToast('Profile updated successfully', 'success');
+            // Update stored user info
+            const user = Auth.getUser();
+            user.name = response.data.name;
+            user.email = response.data.email;
+            localStorage.setItem('user', JSON.stringify(user));
+            loadProfile();
+          } else {
+            App.showToast(response.message || 'Failed to update profile', 'error');
+          }
+        } catch (error) {
+          App.showToast(error.message || 'An error occurred', 'error');
+        } finally {
+          btn.disabled = false;
+          spinner.classList.add('d-none');
+        }
+      });
+
+      // Password change form
+      document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmNewPassword').value;
+
+        if (newPassword !== confirmPassword) {
+          App.showToast('New passwords do not match', 'error');
+          return;
+        }
+
+        const btn = document.getElementById('changePasswordBtn');
+        const spinner = document.getElementById('passwordSpinner');
+        
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+
+        try {
+          const response = await Api.put('/auth/password', {
+            currentPassword: document.getElementById('currentPassword').value,
+            newPassword: newPassword
+          });
+
+          if (response.success) {
+            App.showToast('Password changed successfully', 'success');
+            // Update token if returned
+            if (response.data.token) {
+              localStorage.setItem('token', response.data.token);
+            }
+            this.reset();
+          } else {
+            App.showToast(response.message || 'Failed to change password', 'error');
+          }
+        } catch (error) {
+          App.showToast(error.message || 'An error occurred', 'error');
+        } finally {
+          btn.disabled = false;
+          spinner.classList.add('d-none');
+        }
+      });
+
+      // Avatar upload form
+      document.getElementById('avatarForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const fileInput = document.getElementById('avatar');
+        if (!fileInput.files.length) return;
+
+        const btn = document.getElementById('uploadAvatarBtn');
+        const spinner = document.getElementById('avatarSpinner');
+        
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+
+        try {
+          const formData = new FormData();
+          formData.append('avatar', fileInput.files[0]);
+
+          const response = await Api.upload('/auth/avatar', formData);
+
+          if (response.success) {
+            App.showToast('Avatar updated successfully', 'success');
+            // Update preview
+            if (response.data.avatar) {
+              updateAvatarPreview(response.data.avatar);
+            }
+            this.reset();
+          } else {
+            App.showToast(response.message || 'Failed to upload avatar', 'error');
+          }
+        } catch (error) {
+          App.showToast(error.message || 'An error occurred', 'error');
+        } finally {
+          btn.disabled = false;
+          spinner.classList.add('d-none');
+        }
+      });
+    });
+
+    async function loadProfile() {
+      try {
+        const response = await Api.get('/auth/profile');
+        
+        if (response.success) {
+          const user = response.data;
+          
+          document.getElementById('profileName').textContent = user.name;
+          document.getElementById('profileEmail').textContent = user.email;
+          document.getElementById('profileRole').textContent = user.role;
+          document.getElementById('profileJoined').textContent = App.formatDate(user.createdAt);
+          
+          document.getElementById('name').value = user.name;
+          document.getElementById('email').value = user.email;
+          
+          if (user.avatar) {
+            updateAvatarPreview(user.avatar);
+          }
+        }
+      } catch (error) {
+        App.showToast('Failed to load profile', 'error');
+      }
+    }
+
+    function updateAvatarPreview(avatarUrl) {
+      const preview = document.getElementById('avatarPreview');
+      preview.innerHTML = `<img src="${avatarUrl}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">`;
+    }
+  </script>
+</body>
+</html>

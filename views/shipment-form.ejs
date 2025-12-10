@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | ShipTrack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="/stylesheets/style.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+  <%- include('partials/header') %>
+
+  <main class="flex-grow-1 py-4">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <!-- Breadcrumb -->
+          <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+              <li class="breadcrumb-item"><a href="/shipments">Shipments</a></li>
+              <li class="breadcrumb-item active"><%= mode === 'create' ? 'New Shipment' : 'Edit Shipment' %></li>
+            </ol>
+          </nav>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+              <h4 class="mb-0">
+                <i class="bi bi-<%= mode === 'create' ? 'plus-circle' : 'pencil' %> text-primary me-2"></i>
+                <%= mode === 'create' ? 'Create New Shipment' : 'Edit Shipment' %>
+              </h4>
+            </div>
+            <div class="card-body p-4">
+              <form id="shipmentForm">
+                <!-- Sender Information -->
+                <h6 class="text-muted mb-3">Sender Information</h6>
+                <div class="row mb-4">
+                  <div class="col-md-6 mb-3">
+                    <label for="senderName" class="form-label">Sender Name *</label>
+                    <input type="text" class="form-control" id="senderName" name="senderName" required minlength="2" maxlength="100">
+                    <div class="invalid-feedback"></div>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="origin" class="form-label">Origin Address *</label>
+                    <input type="text" class="form-control" id="origin" name="origin" required minlength="2" maxlength="200" placeholder="e.g., Lagos, Nigeria">
+                    <div class="invalid-feedback"></div>
+                  </div>
+                </div>
+
+                <!-- Receiver Information -->
+                <h6 class="text-muted mb-3">Receiver Information</h6>
+                <div class="row mb-4">
+                  <div class="col-md-6 mb-3">
+                    <label for="receiverName" class="form-label">Receiver Name *</label>
+                    <input type="text" class="form-control" id="receiverName" name="receiverName" required minlength="2" maxlength="100">
+                    <div class="invalid-feedback"></div>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="destination" class="form-label">Destination Address *</label>
+                    <input type="text" class="form-control" id="destination" name="destination" required minlength="2" maxlength="200" placeholder="e.g., Abuja, Nigeria">
+                    <div class="invalid-feedback"></div>
+                  </div>
+                </div>
+
+                <!-- Shipment Details -->
+                <h6 class="text-muted mb-3">Shipment Details</h6>
+                <div class="row mb-4">
+                  <div class="col-md-4 mb-3">
+                    <label for="weight" class="form-label">Weight (kg)</label>
+                    <input type="number" class="form-control" id="weight" name="weight" step="0.01" min="0" max="10000">
+                    <div class="invalid-feedback"></div>
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="estimatedDelivery" class="form-label">Estimated Delivery</label>
+                    <input type="date" class="form-control" id="estimatedDelivery" name="estimatedDelivery">
+                    <div class="invalid-feedback"></div>
+                  </div>
+                  <% if (mode === 'edit') { %>
+                  <div class="col-md-4 mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                      <option value="pending">Pending</option>
+                      <option value="in_transit">In Transit</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <% } %>
+                </div>
+
+                <div class="mb-4">
+                  <label for="description" class="form-label">Description</label>
+                  <textarea class="form-control" id="description" name="description" rows="3" maxlength="1000" placeholder="Describe the shipment contents..."></textarea>
+                  <div class="invalid-feedback"></div>
+                </div>
+
+                <% if (mode === 'create') { %>
+                <!-- File Attachments (Create mode only) -->
+                <div class="mb-4">
+                  <label for="attachments" class="form-label">Attachments (optional)</label>
+                  <input type="file" class="form-control" id="attachments" name="attachments" multiple accept=".jpg,.jpeg,.png,.gif,.pdf">
+                  <small class="text-muted">Max 5 files, 5MB each. Supported: images, PDF</small>
+                </div>
+                <% } %>
+
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                  <a href="/shipments" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Cancel
+                  </a>
+                  <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <span class="spinner-border spinner-border-sm d-none me-2" id="submitSpinner"></span>
+                    <i class="bi bi-check-lg me-2" id="submitIcon"></i>
+                    <span id="submitText"><%= mode === 'create' ? 'Create Shipment' : 'Save Changes' %></span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+  <%- include('partials/scripts') %>
+
+  <script>
+    const mode = '<%= mode %>';
+    const shipmentId = '<%= typeof shipmentId !== "undefined" ? shipmentId : "" %>';
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      if (!Auth.requireAuth()) return;
+
+      // Set minimum date for estimated delivery
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('estimatedDelivery').min = tomorrow.toISOString().split('T')[0];
+
+      // Load shipment data if editing
+      if (mode === 'edit' && shipmentId) {
+        await loadShipment();
+      }
+
+      // Form submission
+      document.getElementById('shipmentForm').addEventListener('submit', handleSubmit);
+    });
+
+    async function loadShipment() {
+      try {
+        App.showLoading();
+        const response = await Api.get(`/shipments/${shipmentId}`);
+        
+        if (response.success) {
+          const shipment = response.data;
+          
+          document.getElementById('senderName').value = shipment.senderName || '';
+          document.getElementById('receiverName').value = shipment.receiverName || '';
+          document.getElementById('origin').value = shipment.origin || '';
+          document.getElementById('destination').value = shipment.destination || '';
+          document.getElementById('weight').value = shipment.weight || '';
+          document.getElementById('description').value = shipment.description || '';
+          document.getElementById('status').value = shipment.status || 'pending';
+          
+          if (shipment.estimatedDelivery) {
+            document.getElementById('estimatedDelivery').value = 
+              new Date(shipment.estimatedDelivery).toISOString().split('T')[0];
+          }
+        } else {
+          App.showToast('Failed to load shipment', 'error');
+          setTimeout(() => window.location.href = '/shipments', 2000);
+        }
+      } catch (error) {
+        App.showToast(error.message || 'An error occurred', 'error');
+        setTimeout(() => window.location.href = '/shipments', 2000);
+      } finally {
+        App.hideLoading();
+      }
+    }
+
+    async function handleSubmit(e) {
+      e.preventDefault();
+      
+      // Clear previous validation errors
+      document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const submitSpinner = document.getElementById('submitSpinner');
+      const submitIcon = document.getElementById('submitIcon');
+      
+      submitBtn.disabled = true;
+      submitSpinner.classList.remove('d-none');
+      submitIcon.classList.add('d-none');
+
+      try {
+        let response;
+        
+        if (mode === 'create') {
+          // Create with FormData to support file uploads
+          const formData = new FormData();
+          formData.append('senderName', document.getElementById('senderName').value.trim());
+          formData.append('receiverName', document.getElementById('receiverName').value.trim());
+          formData.append('origin', document.getElementById('origin').value.trim());
+          formData.append('destination', document.getElementById('destination').value.trim());
+          
+          const weight = document.getElementById('weight').value;
+          if (weight) formData.append('weight', weight);
+          
+          const estimatedDelivery = document.getElementById('estimatedDelivery').value;
+          if (estimatedDelivery) formData.append('estimatedDelivery', estimatedDelivery);
+          
+          const description = document.getElementById('description').value.trim();
+          if (description) formData.append('description', description);
+          
+          // Add files
+          const fileInput = document.getElementById('attachments');
+          if (fileInput && fileInput.files.length > 0) {
+            for (let file of fileInput.files) {
+              formData.append('attachments', file);
+            }
+          }
+          
+          response = await Api.upload('/shipments', formData);
+        } else {
+          // Update with JSON
+          const data = {
+            senderName: document.getElementById('senderName').value.trim(),
+            receiverName: document.getElementById('receiverName').value.trim(),
+            origin: document.getElementById('origin').value.trim(),
+            destination: document.getElementById('destination').value.trim(),
+            status: document.getElementById('status').value,
+          };
+          
+          const weight = document.getElementById('weight').value;
+          if (weight) data.weight = parseFloat(weight);
+          
+          const estimatedDelivery = document.getElementById('estimatedDelivery').value;
+          if (estimatedDelivery) data.estimatedDelivery = estimatedDelivery;
+          
+          const description = document.getElementById('description').value.trim();
+          if (description) data.description = description;
+          
+          response = await Api.put(`/shipments/${shipmentId}`, data);
+        }
+
+        if (response.success) {
+          App.showToast(
+            mode === 'create' ? 'Shipment created successfully!' : 'Shipment updated successfully!',
+            'success'
+          );
+          setTimeout(() => {
+            window.location.href = `/shipments/view/${response.data._id}`;
+          }, 1000);
+        } else {
+          App.showToast(response.message || 'Operation failed', 'error');
+          
+          // Show field errors
+          if (response.errors) {
+            response.errors.forEach(error => {
+              const field = document.getElementById(error.field);
+              if (field) {
+                field.classList.add('is-invalid');
+                const feedback = field.nextElementSibling;
+                if (feedback && feedback.classList.contains('invalid-feedback')) {
+                  feedback.textContent = error.message;
+                }
+              }
+            });
+          }
+        }
+      } catch (error) {
+        App.showToast(error.message || 'An error occurred', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitSpinner.classList.add('d-none');
+        submitIcon.classList.remove('d-none');
+      }
+    }
+  </script>
+</body>
+</html>

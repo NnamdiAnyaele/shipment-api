@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | ShipTrack</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="/stylesheets/style.css" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+  <%- include('partials/header') %>
+
+  <main class="flex-grow-1 d-flex align-items-center py-5">
+    <div class="container text-center">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <i class="bi bi-exclamation-triangle text-warning" style="font-size: 6rem;"></i>
+          <h1 class="display-4 mt-4">Oops!</h1>
+          <p class="lead text-muted mb-4"><%= message || 'Something went wrong' %></p>
+          
+          <% if (error && error.status) { %>
+          <p class="text-muted mb-4">Error Code: <%= error.status %></p>
+          <% } %>
+          
+          <% if (error && error.stack && process.env.NODE_ENV === 'development') { %>
+          <div class="card text-start mb-4">
+            <div class="card-header">
+              <small class="text-muted">Stack Trace (Development Only)</small>
+            </div>
+            <div class="card-body">
+              <pre class="mb-0 small"><%= error.stack %></pre>
+            </div>
+          </div>
+          <% } %>
+
+          <div class="d-flex gap-2 justify-content-center">
+            <a href="/" class="btn btn-primary">
+              <i class="bi bi-house me-2"></i>Go Home
+            </a>
+            <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+              <i class="bi bi-arrow-left me-2"></i>Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>
