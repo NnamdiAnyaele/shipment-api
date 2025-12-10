@@ -4,9 +4,9 @@ A production-ready RESTful API for managing shipments, built with Node.js, Expre
 
 ## 🌐 Live Demo
 
-- **API Base URL:** `https://your-deployed-url.com/api`
-- **API Documentation:** `https://your-deployed-url.com/api-docs`
-- **Web Interface:** `https://your-deployed-url.com`
+- **API Base URL:** `https://shipment-api-mbrc.onrender.com//api`
+- **API Documentation:** `https://shipment-api-mbrc.onrender.com//api-docs`
+- **Web Interface:** `https://shipment-api-mbrc.onrender.com/`
 
 ## ✨ Features
 
@@ -67,28 +67,33 @@ shipment-api/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - MongoDB 6+
 - npm or yarn
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/yourusername/shipment-api.git
    cd shipment-api
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    ```
+
    Edit `.env` with your configuration:
+
    ```env
    NODE_ENV=development
    PORT=3005
@@ -98,11 +103,13 @@ shipment-api/
    ```
 
 4. **Seed the database (optional)**
+
    ```bash
    npm run seed
    ```
 
 5. **Start the server**
+
    ```bash
    # Development
    npm run dev
@@ -129,49 +136,54 @@ Authorization: Bearer <your-token>
 ### Endpoints
 
 #### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login user |
-| GET | `/api/auth/profile` | Get current user profile |
-| PUT | `/api/auth/profile` | Update profile |
-| PUT | `/api/auth/password` | Change password |
-| PUT | `/api/auth/avatar` | Update avatar |
-| POST | `/api/auth/logout` | Logout |
-| GET | `/api/auth/verify` | Verify token |
+
+| Method | Endpoint             | Description              |
+| ------ | -------------------- | ------------------------ |
+| POST   | `/api/auth/register` | Register new user        |
+| POST   | `/api/auth/login`    | Login user               |
+| GET    | `/api/auth/profile`  | Get current user profile |
+| PUT    | `/api/auth/profile`  | Update profile           |
+| PUT    | `/api/auth/password` | Change password          |
+| PUT    | `/api/auth/avatar`   | Update avatar            |
+| POST   | `/api/auth/logout`   | Logout                   |
+| GET    | `/api/auth/verify`   | Verify token             |
 
 #### Shipments
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/shipments` | Get all shipments |
-| GET | `/api/shipments/:id` | Get shipment by ID |
-| GET | `/api/shipments/track/:trackingNumber` | Get by tracking number |
-| POST | `/api/shipments` | Create shipment |
-| PUT | `/api/shipments/:id` | Update shipment |
-| PATCH | `/api/shipments/:id/status` | Update status |
-| DELETE | `/api/shipments/:id` | Delete shipment |
-| GET | `/api/shipments/stats` | Get statistics |
-| POST | `/api/shipments/:id/attachments` | Add attachment |
-| DELETE | `/api/shipments/:id/attachments/:attachmentId` | Remove attachment |
+
+| Method | Endpoint                                       | Description            |
+| ------ | ---------------------------------------------- | ---------------------- |
+| GET    | `/api/shipments`                               | Get all shipments      |
+| GET    | `/api/shipments/:id`                           | Get shipment by ID     |
+| GET    | `/api/shipments/track/:trackingNumber`         | Get by tracking number |
+| POST   | `/api/shipments`                               | Create shipment        |
+| PUT    | `/api/shipments/:id`                           | Update shipment        |
+| PATCH  | `/api/shipments/:id/status`                    | Update status          |
+| DELETE | `/api/shipments/:id`                           | Delete shipment        |
+| GET    | `/api/shipments/stats`                         | Get statistics         |
+| POST   | `/api/shipments/:id/attachments`               | Add attachment         |
+| DELETE | `/api/shipments/:id/attachments/:attachmentId` | Remove attachment      |
 
 #### Public Tracking
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/track/:trackingNumber` | Track shipment (no auth) |
+
+| Method | Endpoint                     | Description              |
+| ------ | ---------------------------- | ------------------------ |
+| GET    | `/api/track/:trackingNumber` | Track shipment (no auth) |
 
 #### User Management (Admin)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/users` | Get all users |
-| GET | `/api/users/:id` | Get user by ID |
-| PUT | `/api/users/:id/role` | Update user role |
-| PUT | `/api/users/:id/activate` | Activate user |
-| PUT | `/api/users/:id/deactivate` | Deactivate user |
-| DELETE | `/api/users/:id` | Delete user |
+
+| Method | Endpoint                    | Description      |
+| ------ | --------------------------- | ---------------- |
+| GET    | `/api/users`                | Get all users    |
+| GET    | `/api/users/:id`            | Get user by ID   |
+| PUT    | `/api/users/:id/role`       | Update user role |
+| PUT    | `/api/users/:id/activate`   | Activate user    |
+| PUT    | `/api/users/:id/deactivate` | Deactivate user  |
+| DELETE | `/api/users/:id`            | Delete user      |
 
 ### Request/Response Examples
 
 #### Create Shipment
+
 ```bash
 curl -X POST http://localhost:3005/api/shipments \
   -H "Authorization: Bearer <token>" \
@@ -187,37 +199,39 @@ curl -X POST http://localhost:3005/api/shipments \
 ```
 
 **Response:**
+
 ```json
 {
-  "success": true,
-  "message": "Shipment created successfully",
-  "data": {
-    "_id": "...",
-    "trackingNumber": "SHP-M5X3K9Y-ABC123",
-    "senderName": "John Doe",
-    "receiverName": "Jane Smith",
-    "origin": "Lagos, Nigeria",
-    "destination": "Abuja, Nigeria",
-    "status": "pending",
-    "weight": 5.5,
-    "description": "Electronics package",
-    "createdAt": "2024-01-15T10:30:00.000Z",
-    "updatedAt": "2024-01-15T10:30:00.000Z"
-  }
+	"success": true,
+	"message": "Shipment created successfully",
+	"data": {
+		"_id": "...",
+		"trackingNumber": "SHP-M5X3K9Y-ABC123",
+		"senderName": "John Doe",
+		"receiverName": "Jane Smith",
+		"origin": "Lagos, Nigeria",
+		"destination": "Abuja, Nigeria",
+		"status": "pending",
+		"weight": 5.5,
+		"description": "Electronics package",
+		"createdAt": "2024-01-15T10:30:00.000Z",
+		"updatedAt": "2024-01-15T10:30:00.000Z"
+	}
 }
 ```
 
 #### Error Response
+
 ```json
 {
-  "success": false,
-  "message": "Validation failed",
-  "errors": [
-    {
-      "field": "senderName",
-      "message": "Sender name is required"
-    }
-  ]
+	"success": false,
+	"message": "Validation failed",
+	"errors": [
+		{
+			"field": "senderName",
+			"message": "Sender name is required"
+		}
+	]
 }
 ```
 
@@ -247,21 +261,21 @@ Import the included Postman collection for easy API testing:
 
 ## 🔐 Demo Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@example.com | password123 |
+| Role    | Email               | Password    |
+| ------- | ------------------- | ----------- |
+| Admin   | admin@example.com   | password123 |
 | Manager | manager@example.com | password123 |
-| User | user@example.com | password123 |
+| User    | user@example.com    | password123 |
 
 ## 📝 Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm start` | Start production server |
-| `npm run dev` | Start development server with nodemon |
-| `npm test` | Run tests |
-| `npm run seed` | Seed database with sample data |
-| `npm run gen-doc` | Generate Swagger documentation |
+| Script            | Description                           |
+| ----------------- | ------------------------------------- |
+| `npm start`       | Start production server               |
+| `npm run dev`     | Start development server with nodemon |
+| `npm test`        | Run tests                             |
+| `npm run seed`    | Seed database with sample data        |
+| `npm run gen-doc` | Generate Swagger documentation        |
 
 ## 🏗 Architecture
 
@@ -296,4 +310,5 @@ Nnamdi Anyaele - Senior Backend Engineer
 ## 🙏 Acknowledgments
 
 Built as part of the TaxTech Backend Engineer Assessment.
+
 # shipment-api
