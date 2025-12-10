@@ -100,6 +100,7 @@ const shipmentValidation = {
 	}),
 
 	update: Joi.object({
+		trackingNumber: Joi.any().strip(),
 		senderName: Joi.string().min(2).max(100).messages({
 			"string.min": "Sender name must be at least 2 characters",
 			"string.max": "Sender name cannot exceed 100 characters",
@@ -133,11 +134,7 @@ const shipmentValidation = {
 		estimatedDelivery: Joi.date().messages({
 			"date.base": "Please provide a valid date",
 		}),
-	})
-		.min(1)
-		.messages({
-			"object.min": "At least one field is required for update",
-		}),
+	}),
 
 	query: Joi.object({
 		page: Joi.number().integer().min(1).default(1),

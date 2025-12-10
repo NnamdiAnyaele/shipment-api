@@ -63,7 +63,8 @@ const generalLimiter = rateLimit({
 	},
 	standardHeaders: true,
 	legacyHeaders: false,
-	skip: (req) => req.path === "/health" || req.path === "/",
+	skip: (req) =>
+		req.path === "/health" || req.path === "/" || config.NODE_ENV === "test",
 });
 
 const authLimiter = rateLimit({
@@ -75,6 +76,7 @@ const authLimiter = rateLimit({
 	},
 	standardHeaders: true,
 	legacyHeaders: false,
+	skip: () => config.NODE_ENV === "test",
 });
 
 // View engine setup
