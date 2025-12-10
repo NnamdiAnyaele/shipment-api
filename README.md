@@ -291,7 +291,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 👨‍💻 Author
 
-Samson - Backend Engineer
+Nnamdi Anyaele - Senior Backend Engineer
 
 ## 🙏 Acknowledgments
 
